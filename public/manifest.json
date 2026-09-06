@@ -1,0 +1,17 @@
+{
+  "name": "KrishiAI - Digital Agriculture Platform",
+  "short_name": "KrishiAI",
+  "description": "Unified AI Agriculture Platform for Indian Farmers - Crop Advisory, Disease Detection, Weather, Satellite Health & Schemes",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#f0fdf4",
+  "theme_color": "#16a34a",
+  "icons": [
+    {
+      "src": "/sprout.svg",
+      "sizes": "192x192 512x512",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}
