@@ -6,6 +6,7 @@ export const DEFAULT_PROFILE = {
   phone: '+91 98765 43210',
   state: 'Punjab',
   district: 'Ludhiana',
+  tehsil: 'Ludhiana East',
   village: 'Sahnewal',
   landArea: 5,
   landUnit: 'acres',

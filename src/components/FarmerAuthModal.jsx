@@ -1,13 +1,9 @@
 import React, { useState } from 'react';
-import { UserCheck, Lock, Mail, ArrowRight, X, Save, ArrowLeft } from 'lucide-react';
+import { UserCheck, Lock, Mail, ArrowRight, X, Save, ArrowLeft, MapPin } from 'lucide-react';
 import { translations } from '../i18n/translations';
 import { signUpFarmerFirebase, signInFarmerFirebase } from '../services/firebaseAuthService';
 import { saveFarmerProfileToFirestore } from '../services/firebaseDbService';
-
-const INDIAN_STATES = [
-  'Punjab', 'Haryana', 'Uttar Pradesh', 'Bihar', 'Madhya Pradesh',
-  'Rajasthan', 'Maharashtra', 'Gujarat', 'Andhra Pradesh', 'Karnataka', 'Tamil Nadu'
-];
+import { getStatesList, getDistrictsList, getTehsilsList } from '../data/indianLocations';
 
 export const FarmerAuthModal = ({
   isOpen,
@@ -23,8 +19,16 @@ export const FarmerAuthModal = ({
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [name, setName] = useState('');
+
+  // Dynamic Location State
+  const statesList = getStatesList();
   const [state, setState] = useState('Punjab');
-  const [district, setDistrict] = useState('Ludhiana');
+
+  const districtsList = getDistrictsList(state);
+  const [district, setDistrict] = useState(districtsList[0] || 'Ludhiana');
+
+  const tehsilsList = getTehsilsList(state, district);
+  const [tehsil, setTehsil] = useState(tehsilsList[0] || 'Ludhiana East');
 
   const [landArea, setLandArea] = useState(5);
   const [landUnit, setLandUnit] = useState('acres');
@@ -40,6 +44,21 @@ export const FarmerAuthModal = ({
   const [errorMsg, setErrorMsg] = useState(null);
 
   if (!isOpen) return null;
+
+  const handleStateChange = (newSt) => {
+    setState(newSt);
+    const newDistList = getDistrictsList(newSt);
+    const firstDist = newDistList[0] || '';
+    setDistrict(firstDist);
+    const newTehList = getTehsilsList(newSt, firstDist);
+    setTehsil(newTehList[0] || '');
+  };
+
+  const handleDistrictChange = (newDist) => {
+    setDistrict(newDist);
+    const newTehList = getTehsilsList(state, newDist);
+    setTehsil(newTehList[0] || '');
+  };
 
   const handleSignIn = async (e) => {
     e.preventDefault();
@@ -60,6 +79,7 @@ export const FarmerAuthModal = ({
       phone: user.email,
       state: user.state || state,
       district: user.district || district,
+      tehsil: tehsil,
       landArea,
       landUnit,
       soilType,
@@ -108,6 +128,7 @@ export const FarmerAuthModal = ({
       phone: user.email,
       state: user.state,
       district: user.district,
+      tehsil: tehsil,
       landArea,
       landUnit,
       soilType,
@@ -298,26 +319,39 @@ export const FarmerAuthModal = ({
               />
             </div>
 
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.75rem' }}>
+            {/* Dynamic State -> District -> Tehsil Cascading Dropdowns */}
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '0.5rem' }}>
               <div className="form-group">
                 <label className="form-label">{t.stateLabel}</label>
                 <select
                   value={state}
-                  onChange={(e) => setState(e.target.value)}
+                  onChange={(e) => handleStateChange(e.target.value)}
                   className="form-select"
                 >
-                  {INDIAN_STATES.map(s => <option key={s} value={s}>{s}</option>)}
+                  {statesList.map(s => <option key={s} value={s}>{s}</option>)}
                 </select>
               </div>
+
               <div className="form-group">
                 <label className="form-label">{t.districtLabel}</label>
-                <input
-                  type="text"
+                <select
                   value={district}
-                  onChange={(e) => setDistrict(e.target.value)}
-                  className="form-input"
-                  required
-                />
+                  onChange={(e) => handleDistrictChange(e.target.value)}
+                  className="form-select"
+                >
+                  {districtsList.map(d => <option key={d} value={d}>{d}</option>)}
+                </select>
+              </div>
+
+              <div className="form-group">
+                <label className="form-label">Tehsil / Block</label>
+                <select
+                  value={tehsil}
+                  onChange={(e) => setTehsil(e.target.value)}
+                  className="form-select"
+                >
+                  {tehsilsList.map(tItem => <option key={tItem} value={tItem}>{tItem}</option>)}
+                </select>
               </div>
             </div>
 

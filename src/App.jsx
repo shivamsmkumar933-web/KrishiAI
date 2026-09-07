@@ -15,6 +15,7 @@ import { Navbar } from './components/Navbar';
 import { Dashboard } from './components/Dashboard';
 import { KrishiAssistantChat } from './components/KrishiAssistantChat';
 import { AdminDashboard } from './components/AdminDashboard';
+import { VoiceAssistant } from './components/VoiceAssistant';
 import { MessageSquare } from 'lucide-react';
 
 export const App = () => {
@@ -117,6 +118,15 @@ export const App = () => {
           language={language}
           onAuthSuccess={handleAdminAuthSuccess}
         />
+
+        {/* Single Unified Floating Voice Assistant */}
+        <VoiceAssistant
+          currentRole={currentRole}
+          currentTab={currentTab}
+          language={language}
+          farmerProfile={profile}
+          weather={weather}
+        />
       </>
     );
   }
@@ -158,6 +168,7 @@ export const App = () => {
         )}
       </main>
 
+      {/* Floating KrishiAI Assistant Chat Button (Farmer View) */}
       {currentRole === 'farmer' && (
         <div style={{ position: 'fixed', bottom: '1.5rem', right: '1.5rem', zIndex: 40 }}>
           <button
@@ -172,6 +183,15 @@ export const App = () => {
           </button>
         </div>
       )}
+
+      {/* Single Unified Floating Voice Assistant */}
+      <VoiceAssistant
+        currentRole={currentRole}
+        currentTab={currentTab}
+        language={language}
+        farmerProfile={profile}
+        weather={weather}
+      />
 
       <KrishiAssistantChat
         farmerProfile={profile}

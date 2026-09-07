@@ -1,11 +1,7 @@
 import React, { useState } from 'react';
 import { X, Save, User } from 'lucide-react';
 import { translations } from '../i18n/translations';
-
-const INDIAN_STATES = [
-  'Punjab', 'Haryana', 'Uttar Pradesh', 'Bihar', 'Madhya Pradesh',
-  'Rajasthan', 'Maharashtra', 'Gujarat', 'Andhra Pradesh', 'Karnataka', 'Tamil Nadu'
-];
+import { getStatesList, getDistrictsList, getTehsilsList } from '../data/indianLocations';
 
 export const FarmerOnboardingModal = ({
   isOpen,
@@ -20,6 +16,31 @@ export const FarmerOnboardingModal = ({
 
   if (!isOpen) return null;
 
+  const statesList = getStatesList();
+  const districtsList = getDistrictsList(form.state);
+  const tehsilsList = getTehsilsList(form.state, form.district);
+
+  const handleStateChange = (newSt) => {
+    const newDistList = getDistrictsList(newSt);
+    const firstDist = newDistList[0] || '';
+    const newTehList = getTehsilsList(newSt, firstDist);
+    setForm({
+      ...form,
+      state: newSt,
+      district: firstDist,
+      tehsil: newTehList[0] || ''
+    });
+  };
+
+  const handleDistrictChange = (newDist) => {
+    const newTehList = getTehsilsList(form.state, newDist);
+    setForm({
+      ...form,
+      district: newDist,
+      tehsil: newTehList[0] || ''
+    });
+  };
+
   const handleSubmit = (e) => {
     e.preventDefault();
     onSave({ ...form, updatedAt: new Date().toISOString() });
@@ -28,7 +49,7 @@ export const FarmerOnboardingModal = ({
 
   return (
     <div className="modal-overlay">
-      <div className="modal-box" style={{ maxWidth: '36rem' }}>
+      <div className="modal-box" style={{ maxWidth: '38rem' }}>
         <button
           onClick={onClose}
           style={{
@@ -72,27 +93,43 @@ export const FarmerOnboardingModal = ({
               <label className="form-label">{t.stateLabel}</label>
               <select
                 value={form.state}
-                onChange={(e) => setForm({ ...form, state: e.target.value })}
+                onChange={(e) => handleStateChange(e.target.value)}
                 className="form-select"
               >
-                {INDIAN_STATES.map((st) => (
+                {statesList.map((st) => (
                   <option key={st} value={st}>{st}</option>
                 ))}
               </select>
             </div>
           </div>
 
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '0.75rem' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '0.5rem' }}>
             <div className="form-group">
               <label className="form-label">{t.districtLabel}</label>
-              <input
-                type="text"
+              <select
                 value={form.district}
-                onChange={(e) => setForm({ ...form, district: e.target.value })}
-                className="form-input"
-                required
-              />
+                onChange={(e) => handleDistrictChange(e.target.value)}
+                className="form-select"
+              >
+                {districtsList.map((d) => (
+                  <option key={d} value={d}>{d}</option>
+                ))}
+              </select>
             </div>
+
+            <div className="form-group">
+              <label className="form-label">Tehsil / Region</label>
+              <select
+                value={form.tehsil || tehsilsList[0]}
+                onChange={(e) => setForm({ ...form, tehsil: e.target.value })}
+                className="form-select"
+              >
+                {tehsilsList.map((th) => (
+                  <option key={th} value={th}>{th}</option>
+                ))}
+              </select>
+            </div>
+
             <div className="form-group">
               <label className="form-label">{t.landAreaLabel}</label>
               <input
@@ -105,6 +142,9 @@ export const FarmerOnboardingModal = ({
                 required
               />
             </div>
+          </div>
+
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '0.5rem' }}>
             <div className="form-group">
               <label className="form-label">{t.landUnitLabel}</label>
               <select
@@ -117,9 +157,7 @@ export const FarmerOnboardingModal = ({
                 <option value="hectares">Hectares (हेक्टेयर)</option>
               </select>
             </div>
-          </div>
 
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.75rem' }}>
             <div className="form-group">
               <label className="form-label">{t.soilTypeLabel}</label>
               <select
@@ -136,6 +174,7 @@ export const FarmerOnboardingModal = ({
                 <option value="loam">{t.loam}</option>
               </select>
             </div>
+
             <div className="form-group">
               <label className="form-label">{t.irrigationLabel}</label>
               <select
