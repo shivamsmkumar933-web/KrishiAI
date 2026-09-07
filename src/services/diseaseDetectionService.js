@@ -201,7 +201,24 @@ export const DEMO_DISEASE_SAMPLES = [
   }
 ];
 
+const API_BASE = import.meta.env.VITE_API_BASE_URL || '/api';
+
 export const analyzeCropDiseaseImage = async (imageDataBase64, demoIndex = 0) => {
+  // First try Node.js Express Backend API
+  try {
+    const backendRes = await fetch(`${API_BASE}/disease/diagnose`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ imageDataBase64 })
+    });
+    if (backendRes.ok) {
+      const data = await backendRes.json();
+      if (data && data.diseaseName) return data;
+    }
+  } catch (backendErr) {
+    console.warn('Express Backend Disease API unavailable, utilizing fallback provider', backendErr);
+  }
+
   const apiKey = import.meta.env.VITE_GEMINI_API_KEY;
 
   if (apiKey && apiKey.trim() !== '') {

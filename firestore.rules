@@ -1,0 +1,37 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    
+    // Helper Functions
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+    
+    function isOwner(userId) {
+      return isAuthenticated() && request.auth.uid == userId;
+    }
+
+    // Farmer Profiles Collection
+    match /farmer_profiles/{userId} {
+      allow read: if isAuthenticated();
+      allow write: if isOwner(userId) || isAuthenticated();
+    }
+
+    // Leaf Disease Scans Collection
+    match /disease_scans/{scanId} {
+      allow read: if isAuthenticated();
+      allow create, update: if isAuthenticated();
+      allow delete: if isAuthenticated();
+    }
+
+    // Users Database Metadata Collection
+    match /users/{userId} {
+      allow read, write: if isAuthenticated();
+    }
+
+    // Fallback default deny
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}

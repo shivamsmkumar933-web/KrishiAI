@@ -1,7 +1,24 @@
+const API_BASE = import.meta.env.VITE_API_BASE_URL || '/api';
+
 export const sendChatMessageToAI = async (
   userMessage,
   farmerProfile
 ) => {
+  // First try Node.js Express Backend API
+  try {
+    const backendRes = await fetch(`${API_BASE}/ai/chat`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ userMessage, farmerProfile })
+    });
+    if (backendRes.ok) {
+      const data = await backendRes.json();
+      if (data && data.text) return data;
+    }
+  } catch (backendErr) {
+    console.warn('Express Backend API unavailable, utilizing fallback provider', backendErr);
+  }
+
   const apiKey = import.meta.env.VITE_GEMINI_API_KEY;
   const contextStr = farmerProfile ? `
 Farmer Context:
